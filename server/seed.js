@@ -1,6 +1,6 @@
 import faker from "@faker-js/faker";
 
-export function generateUsers(count) {
+function generateUsers(count) {
   const users = [];
   const roles = ["admin", "user", "guest"];
   const statuses = ["active", "inactive", "pending"];
@@ -17,3 +17,6 @@ export function generateUsers(count) {
 
   return { users };
 }
+
+const data = generateUsers(10000);
+fs.writeFileSync("db.json", JSON.stringify(data, null, 2));

@@ -1,21 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 
-export interface TableConfig<TData> {
-  columns: ColumnDef<TData>[];
-  dataSource: (query: {
-    page: number;
-    pageSize: number;
-    sort?: string;
-    sortOrder?: "asc" | "desc";
-    filter?: string;
-  }) => Promise<DataSourceResponse<TData>>;
-  normalizeData?: (response: unknown) => DataSourceResponse<TData>;
-  initialPageSize: number;
-  queryKey?: string; // Optional key for unique cache identity
-}
-
-export interface TableRendererProps<TData> {
-  config: TableConfig<TData>;
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "guest";
+  status: "active" | "inactive" | "pending";
 }
 
 export interface DataSourceResponse<T> {
@@ -23,7 +13,14 @@ export interface DataSourceResponse<T> {
   meta: { total: number };
 }
 
-interface QueryParams {
+export interface TableConfig<TData> {
+  columns: ColumnDef<TData>[];
+  dataSource: (params: QueryParams) => Promise<DataSourceResponse<TData>>;
+  normalizeData: (response: any) => DataSourceResponse<TData>;
+  initialPageSize: number;
+}
+
+export interface QueryParams {
   page: number;
   pageSize: number;
   sort?: string;
