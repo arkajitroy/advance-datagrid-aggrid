@@ -3,7 +3,6 @@ import JSONServer from "json-server";
 const server = JSONServer.create();
 const router = JSONServer.router("db.json");
 const middlewares = JSONServer.defaults();
-
 const port = 3001;
 
 server.use(middlewares);

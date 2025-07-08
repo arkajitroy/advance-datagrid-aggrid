@@ -1,45 +1,37 @@
 "use client";
 
-import { useQuery, QueryFunctionContext } from "@tanstack/react-query";
-import { DataSourceResponse, TableConfig } from "../types";
-
-export interface QueryParams {
-  page: number;
-  pageSize: number;
-  sort?: string;
-  sortOrder?: "asc" | "desc";
-  filter?: string;
-}
-
-type TableQueryKey = [string, number, QueryParams];
+import { useQuery } from "@tanstack/react-query";
+import { TableConfig, DataSourceResponse, QueryParams } from "../types";
 
 export function useTableDataAdapter<TData>(config: TableConfig<TData>, params: QueryParams) {
-  const queryKey: TableQueryKey = [config.queryKey ?? "table", config.initialPageSize, params];
+  const queryKey = [
+    "users",
+    params.page,
+    params.pageSize,
+    params.sort,
+    params.sortOrder,
+    params.filter,
+  ];
 
-  const queryFn = async ({
+  const { data, isLoading, error } = useQuery<DataSourceResponse<TData>, Error>({
     queryKey,
-  }: QueryFunctionContext<TableQueryKey>): Promise<DataSourceResponse<TData>> => {
-    const [, , actualParams] = queryKey;
-    const response = await config.dataSource(actualParams);
-    return config.normalizeData
-      ? config.normalizeData(response as unknown)
-      : (response as DataSourceResponse<TData>);
-  };
-
-  const { data, isLoading } = useQuery<
-    DataSourceResponse<TData>,
-    Error,
-    DataSourceResponse<TData>,
-    TableQueryKey
-  >({
-    queryKey,
-    queryFn,
+    queryFn: async () => {
+      console.log("debug-queryFn", { params });
+      const response = await config.dataSource(params);
+      const normalized = config.normalizeData(response);
+      console.log("debug-normalizedData", normalized);
+      return normalized;
+    },
     staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
+
+  console.log("debug-adapter", { data, isLoading, error });
 
   return {
     data: data?.data ?? [],
-    meta: data?.meta,
+    meta: data?.meta ?? { total: 0 },
     isLoading,
+    error,
   };
 }

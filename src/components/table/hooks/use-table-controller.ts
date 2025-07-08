@@ -3,11 +3,11 @@
 import { useState, useCallback } from "react";
 import { SortingState, PaginationState } from "@tanstack/react-table";
 
-interface UseTableControllerProps {
+interface TableControllerProps {
   initialPageSize: number;
 }
 
-export function useTableController({ initialPageSize }: UseTableControllerProps) {
+export function useTableController({ initialPageSize }: TableControllerProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -15,19 +15,25 @@ export function useTableController({ initialPageSize }: UseTableControllerProps)
   });
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
-  const handleSortingChange = useCallback((updater: any) => {
-    setSorting((prev) => (typeof updater === "function" ? updater(prev) : updater));
-  }, []);
+  const updateSorting = useCallback(
+    (updater: SortingState | ((prev: SortingState) => SortingState)) => {
+      setSorting(updater instanceof Function ? updater(sorting) : updater);
+    },
+    []
+  );
 
-  const handlePaginationChange = useCallback((updater: any) => {
-    setPagination((prev) => (typeof updater === "function" ? updater(prev) : updater));
-  }, []);
+  const updatePagination = useCallback(
+    (updater: PaginationState | ((prev: PaginationState) => PaginationState)) => {
+      setPagination(updater instanceof Function ? updater(pagination) : updater);
+    },
+    []
+  );
 
   return {
     sorting,
-    setSorting: handleSortingChange,
+    setSorting: updateSorting,
     pagination,
-    setPagination: handlePaginationChange,
+    setPagination: updatePagination,
     globalFilter,
     setGlobalFilter,
   };

@@ -1,4 +1,5 @@
-import { ColumnDef } from "@tanstack/react-table";
+"use client";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,16 +79,28 @@ export const usersTableConfig: TableConfig<User> = {
           ...acc,
           ...(value !== undefined && { [key]: String(value) }),
         }),
-        {}
+        {} as Record<string, string>
       )
     );
-    const response = await fetch(`http://localhost:3001/api/users?${query}`);
-    if (!response.ok) throw new Error("Failed to fetch users");
-    return response.json();
+    console.log("debug-dataSource", { query: query.toString() });
+    const response = await fetch(`http://localhost:3001/users?${query}`, { cache: "no-store" });
+    if (!response.ok) {
+      console.error("debug-dataSource-error", {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    const json = await response.json();
+    console.log("debug-dataSource-response", json);
+    return json;
   },
-  normalizeData: (response: any): DataSourceResponse<User> => ({
-    data: response.data,
-    meta: { total: response.meta.total },
-  }),
+  normalizeData: (response: any): DataSourceResponse<User> => {
+    console.log("debug-normalizeData", response);
+    return {
+      data: response.data ?? [],
+      meta: { total: response.meta?.total ?? 0 },
+    };
+  },
   initialPageSize: 10,
 };
